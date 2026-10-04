@@ -1,0 +1,6 @@
+{
+  "name": "Level Deceit",
+  "description": "A thrilling troll-platformer with 20 treacherous levels filled with sneaky traps, deceptive doors, and shifting floors.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
