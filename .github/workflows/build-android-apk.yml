@@ -17,7 +17,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '22'
 
       - name: Set up Java 21
         uses: actions/setup-java@v4
@@ -25,14 +25,17 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
       - name: Install dependencies
         run: npm install
 
       - name: Build web app
         run: npm run build
+
+      - name: Add Android platform if missing
+        run: |
+          if [ ! -d "android" ]; then
+            npx cap add android
+          fi
 
       - name: Sync Capacitor
         run: npx cap sync android
@@ -40,12 +43,25 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./android/gradlew
 
-      - name: Build APK (Debug)
+      - name: Build Capacitor Android APK (Debug)
         working-directory: ./android
         run: ./gradlew assembleDebug --no-daemon --stacktrace
 
-      - name: Upload APK
+      - name: Upload Capacitor APK
         uses: actions/upload-artifact@v4
         with:
-          name: debug-apk
-          path: ./android/app/build/outputs/apk/debug/
+          name: capacitor-debug-apk
+          path: ./android/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Make native gradlew executable
+        run: chmod +x ./android-app/gradlew
+
+      - name: Build Native Kotlin Android APK (Debug)
+        working-directory: ./android-app
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: Upload Native Android APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-debug-apk
+          path: ./android-app/app/build/outputs/apk/debug/app-debug.apk
