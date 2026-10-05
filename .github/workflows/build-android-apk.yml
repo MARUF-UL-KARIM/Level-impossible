@@ -1,60 +1,51 @@
 name: Build Android APK
 
 on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
-  build-apk:
+  build:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
 
-      - name: Set up Java
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Set up Java 21
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
-          java-version: "17"
+          java-version: '21'
+          distribution: 'temurin'
 
-      - name: Check Android project
-        run: |
-          if [ ! -d "android-app" ]; then
-            echo "The android-app folder was not found."
-            exit 1
-          fi
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
 
-      - name: Check Gradle wrapper
-        run: |
-          if [ ! -f "android-app/gradlew" ]; then
-            echo "The Gradle wrapper was not found."
-            exit 1
-          fi
-          chmod +x android-app/gradlew
+      - name: Install dependencies
+        run: npm install
 
-      - name: Remove stale Gradle project cache
-        run: |
-          rm -rf android-app/.gradle
-          rm -rf android-app/app/build
+      - name: Build web app
+        run: npm run build
 
-      - name: Build debug APK
-        working-directory: android-app
-        run: ./gradlew assembleDebug --stacktrace --no-daemon
+      - name: Sync Capacitor
+        run: npx cap sync android
 
-      - name: Verify APK
-        run: |
-          APK_PATH="android-app/app/build/outputs/apk/debug/app-debug.apk"
-          if [ ! -f "$APK_PATH" ]; then
-            echo "APK was not found at: $APK_PATH"
-            exit 1
-          fi
-          echo "APK generated successfully:"
-          ls -lh "$APK_PATH"
+      - name: Make gradlew executable
+        run: chmod +x ./android/gradlew
+
+      - name: Build APK (Debug)
+        working-directory: ./android
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Generated-Android-APK
-          path: android-app/app/build/outputs/apk/debug/app-debug.apk
-          if-no-files-found: error
-          retention-days: 14
+          name: debug-apk
+          path: ./android/app/build/outputs/apk/debug/
