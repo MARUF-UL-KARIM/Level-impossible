@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Level Impossible</string>
+    <string name="title_activity_main">Level Impossible</string>
+    <string name="package_name">com.maruf.levelimpossible</string>
+    <string name="custom_url_scheme">com.maruf.levelimpossible</string>
+</resources>
